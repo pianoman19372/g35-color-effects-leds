@@ -28,6 +28,8 @@ class G35_Effects {
     unsigned char _fxMode;
     bool          _fxFadeInto;
     unsigned int  _fxCurrIndex;
+    unsigned char _fxCurrColor;
+    unsigned char _fxCurrOffset;
 
     // FX transition methods
     void _nextTransition();
@@ -62,7 +64,11 @@ class G35_Effects {
     void _presetMovie();
     void _presetXFader();
     void _presetPiano();
- 
+
+    void _presetFadeOneByOne();
+    void _presetFadeNorthToSouth();
+    void _presetFadeEastToWest();
+
 };
 
 #endif

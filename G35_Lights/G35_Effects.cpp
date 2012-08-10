@@ -24,6 +24,7 @@ G35_Effects::G35_Effects(G35_Lights *led) {
     _fxMode      = FX_OFF;
     _fxFadeInto  = false;
     _fxCurrIndex = 0;
+    _fxCurrIndex = 0;
 
 }
 
@@ -79,6 +80,8 @@ void G35_Effects::_nextTransition() {
     if(_fxMode == 12) { _presetDirectWhite(); }
     if(_fxMode == 13) { _presetDirectIncandescent(); }
 
+    if(_fxMode == 14) { _presetFadeOneByOne(); }
+
     if(_fxMode == 15) { _presetUSA(); }
     if(_fxMode == 16) { _presetIreland(); }
     if(_fxMode == 17) { _presetFrance(); }
@@ -89,6 +92,8 @@ void G35_Effects::_nextTransition() {
     if(_fxMode == 22) { _presetXFader(); }
     if(_fxMode == 23) { _presetPiano(); }
 
+    if(_fxMode == 24) { _presetFadeNorthToSouth(); }
+    if(_fxMode == 25) { _presetFadeEastToWest();   }
     _led->tx(_fxFadeInto);
 }
 
@@ -115,6 +120,69 @@ void G35_Effects::_presetDirectViolet()       { _presetDirectColor(VIOLET      )
 void G35_Effects::_presetDirectWhite()        { _presetDirectColor(WHITE       ); } 
 void G35_Effects::_presetDirectIncandescent() { _presetDirectColor(INCANDESCENT); }
 
+void G35_Effects::_presetFadeOneByOne() {
+    _fxFadeInto = true;
+    if(_fxCurrIndex == 0) {
+        unsigned char last_color = _fxCurrColor;
+        while(last_color == _fxCurrColor) { _fxCurrColor = random(1,13); }
+    }
+    _led->setColor(_fxCurrIndex, _fxCurrColor);
+    _fxCurrIndex = (_fxCurrIndex + 1) % (NUM_LEDS);
+}
+
+
+void G35_Effects::_presetFadeNorthToSouth() {
+    _fxFadeInto = true;
+    if(_fxCurrIndex == 0) {
+        unsigned char last_color = _fxCurrColor;
+        _fxCurrOffset = random(0, 2);
+        while(last_color == _fxCurrColor) { _fxCurrColor = random(1,13); }
+    }
+    if(_fxCurrOffset == 0) {
+        _led->setColor((_fxCurrIndex +  0 ), _fxCurrColor);
+        _led->setColor((13 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor((_fxCurrIndex +  14), _fxCurrColor);
+        _led->setColor((27 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor((_fxCurrIndex +  28), _fxCurrColor);
+        _led->setColor((41 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor((_fxCurrIndex +  42), _fxCurrColor);
+        _led->setColor((55 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor((_fxCurrIndex +  56), _fxCurrColor);
+    } else {
+        _led->setColor(NUM_LEDS - 1 - (_fxCurrIndex +  0 ), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (13 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (_fxCurrIndex +  14), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (27 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (_fxCurrIndex +  28), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (41 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (_fxCurrIndex +  42), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (55 - _fxCurrIndex ), _fxCurrColor);
+        _led->setColor(NUM_LEDS - 1 - (_fxCurrIndex +  56), _fxCurrColor);
+    }
+    _fxCurrIndex = (_fxCurrIndex + 1) % (7);
+}
+
+void G35_Effects::_presetFadeEastToWest() {
+    _fxFadeInto = true;
+    if(_fxCurrIndex == 0) {
+        unsigned char last_color = _fxCurrColor;
+        _fxCurrOffset = random(0, 2);
+        while(last_color == _fxCurrColor) { _fxCurrColor = random(1,13); }
+    }
+    if(_fxCurrOffset == 0) {
+        for(unsigned char ptr = 0; ptr < 7; ptr++) {
+            _led->setColor(((_fxCurrIndex * 7) + ptr), _fxCurrColor);
+        }
+    } else {
+        for(unsigned char ptr = 0; ptr < 7; ptr++) {
+            _led->setColor((((8 - _fxCurrIndex) * 7) + ptr), _fxCurrColor);
+        }
+    }
+    _fxCurrIndex = (_fxCurrIndex + 1) % (9);
+}
+
+
+
 void G35_Effects::_presetPolice() {
     _fxFadeInto = false;
     unsigned char _fxPoliceBlinks = 6;
@@ -133,14 +201,11 @@ void G35_Effects::_presetPolice() {
 }
 
 void G35_Effects::_presetThreeColorFlag(unsigned int color1, unsigned int color2, unsigned int color3) {
-  // TODO: change this to make the visual appearance of a flag, not the 3-pod fade I use in studio9
-  //
   _fxFadeInto = true; 
-  _fxCurrIndex = (_fxCurrIndex + 1) % 3;
   for (unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
-    if((bulb + _fxCurrIndex) % 3 == 0) { _led->setRGBColor(bulb, color1, MAX_BRIGHTNESS); }
-    if((bulb + _fxCurrIndex) % 3 == 1) { _led->setRGBColor(bulb, color2, MAX_BRIGHTNESS); }
-    if((bulb + _fxCurrIndex) % 3 == 2) { _led->setRGBColor(bulb, color3, MAX_BRIGHTNESS); }
+    if(bulb < 21     ) { _led->setRGBColor(bulb, color3, MAX_BRIGHTNESS); }
+    else if(bulb < 42) { _led->setRGBColor(bulb, color2, MAX_BRIGHTNESS); }
+    else               { _led->setRGBColor(bulb, color1, MAX_BRIGHTNESS); }
   }  
 }
 

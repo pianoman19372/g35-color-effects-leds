@@ -29,14 +29,14 @@ void G35_Lights::enumerateBulbs() {
    digitalWrite(_statusPin, 0);
 
    // settle the bus
-   delay(250); 
+   delay(1000); 
 
    // Enumerate the bulbs
    for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
        _targetBrightness[bulb] = MAX_BRIGHTNESS;
        _targetColor[bulb]      = BLACK;
        _tx(bulb, _targetBrightness[bulb], _targetColor[bulb]);
-       delay(5);
+       delay(10);
    }
 
    // add additional delay
