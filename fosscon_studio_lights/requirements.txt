@@ -1,0 +1,11 @@
+This Arduino project requires the following libraries to be installed in your arduino library
+
+
+ G35_Lights     - v1.0.0 
+                  Available from this project
+
+ G35_Effects    - v1.0.0
+                  Available from this project
+
+ Metro          - v2.3.2
+                  http://arduino.cc/playground/Code/Metro
