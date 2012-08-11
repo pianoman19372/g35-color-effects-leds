@@ -44,7 +44,7 @@ void setup() {
   //fx.setEffects(FX_POLICE, 50, 9999);
   //fx.setEffects(FX_IRELAND, 10000, 10);
   
-  fx.setEffects(3, 200, 50);
+  fx.setEffects(26, 200, 50);
   // Configure USB Serial Port
   Serial.begin(9600);
   

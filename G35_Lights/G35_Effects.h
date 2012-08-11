@@ -68,6 +68,7 @@ class G35_Effects {
     void _presetFadeOneByOne();
     void _presetFadeNorthToSouth();
     void _presetFadeEastToWest();
+    void _presetAWeberLogo();
 
 };
 

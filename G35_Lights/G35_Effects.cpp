@@ -94,6 +94,8 @@ void G35_Effects::_nextTransition() {
 
     if(_fxMode == 24) { _presetFadeNorthToSouth(); }
     if(_fxMode == 25) { _presetFadeEastToWest();   }
+    if(_fxMode == 26) { _presetAWeberLogo();   }
+
     _led->tx(_fxFadeInto);
 }
 
@@ -130,6 +132,38 @@ void G35_Effects::_presetFadeOneByOne() {
     _fxCurrIndex = (_fxCurrIndex + 1) % (NUM_LEDS);
 }
 
+void G35_Effects::_presetAWeberLogo() {
+    _fxFadeInto = true;
+    for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
+        _led->setRGBColor(bulb, ATOMIC_BLUE, 16);
+        switch(bulb) {
+            case 9:
+            case 11:
+            case 17:
+            case 22:
+            case 32:
+            case 31:
+            case 30:
+            case 26:
+            case 35:
+            case 47:
+            case 46:
+            case 45:
+            case 44:
+            case 43:
+            case 42:
+            case 41:
+            case 48:
+            case 50:
+            case 51:
+            case 52:
+            case 53:
+            case 54:
+                _led->setRGBColor(bulb, WHITE, MAX_BRIGHTNESS);
+                break;
+        }
+    }
+}
 
 void G35_Effects::_presetFadeNorthToSouth() {
     _fxFadeInto = true;
