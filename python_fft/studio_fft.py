@@ -1,3 +1,9 @@
+# dependencies:
+# python 2.7
+#   scipy / numpy
+#   pyaudio
+#   pySerial
+
 from __future__ import division
 import pyaudio
 import numpy
@@ -12,7 +18,6 @@ import math
 from socket import socket, AF_INET, SOCK_STREAM
 
 
-#COMM_PORT = 6
 COMM_PORT = '/dev/tty.usbmodemfa141'
 
 class TonalCenter(object):
@@ -39,6 +44,7 @@ class TonalCenter(object):
         self.flats  = ['A ','Bb','B ','C ','Db','D ','Eb','E ','F ','Gb','G ','Ab']
 
     def get_tonal_center(self, found_notes):
+        # work in progress, this isnt working well at the moment
         score_sheet = {}
         series = found_notes * 2
         for note in range(0, 12):
@@ -56,6 +62,7 @@ class TonalCenter(object):
 
         sorted_scores = sorted(score_sheet.iteritems(), key=operator.itemgetter(1))  # power sort
         return sorted_scores[-1]
+
 
 class StudioInput(object):
     """Class to process audio from the studio mixer console."""
@@ -223,23 +230,23 @@ class StudioInput(object):
     def update_lights(self, note_name):
         # skiping this for now
         msg = None
-        if note_name == 'A':   msg='a'
-        if note_name == 'A#':  msg='b'
-        if note_name == 'Bb':  msg='b'
-        if note_name == 'B':   msg='c'
-        if note_name == 'C':   msg='d'
-        if note_name == 'Db':  msg='e'
-        if note_name == 'C#':  msg='e'
-        if note_name == 'D':   msg='f'
-        if note_name == 'Eb':  msg='g'
-        if note_name == 'D#':  msg='g'
-        if note_name == 'E':   msg='h'
-        if note_name == 'F':   msg='i'
-        if note_name == 'Gb':  msg='j'
-        if note_name == 'F#':  msg='j'
-        if note_name == 'G':   msg='k'
-        if note_name == 'Ab':  msg='l'
-        if note_name == 'G#':  msg='l'
+        if note_name == 'A':   msg='b'
+        if note_name == 'A#':  msg='c'
+        if note_name == 'Bb':  msg='c'
+        if note_name == 'B':   msg='d'
+        if note_name == 'C':   msg='e'
+        if note_name == 'Db':  msg='f'
+        if note_name == 'C#':  msg='f'
+        if note_name == 'D':   msg='g'
+        if note_name == 'Eb':  msg='h'
+        if note_name == 'D#':  msg='h'
+        if note_name == 'E':   msg='i'
+        if note_name == 'F':   msg='j'
+        if note_name == 'Gb':  msg='k'
+        if note_name == 'F#':  msg='k'
+        if note_name == 'G':   msg='l'
+        if note_name == 'Ab':  msg='m'
+        if note_name == 'G#':  msg='m'
         if not msg:
             return
 
@@ -272,50 +279,6 @@ class StudioInput(object):
 
         display_mode = 1  #  0: bars, 1: scroll
 
-#        if display_mode == 2:   # tonal center
-#            self.clear()
-#            #print self.fft_data[0]
-#
-#            for j in found:
-#                print j
-#            found_notes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-#            ctr = 0
-#            for dft_slot, dft_power in sorted_found:
-#                ctr = ctr + 1
-#                if ctr > 3:
-#                    break
-#                print dft_power
-#                #if dft_power < (100 * sensitivity):
-#                #    continue
-#                note  = self.NOTE_NAMES[dft_slot]
-#                found_notes[note['note']] += 1
-#
-#            #print found_notes
-#
-#
-#            #return
-#            tc = TonalCenter()
-#            mode, weight = tc.get_tonal_center(found_notes)
-#
-#            if weight > 0.0:
-#                print ' %-9s  %2.3f : %s' % (str(datetime.utcnow())[14:23], weight, mode)
-#                self.update_lights(mode[0:2].strip())
-#            else:
-#                print ' %-9s  %6s : %s' % (str(datetime.utcnow())[14:23], '--.---', '--------------------')
-#
-#
-#
-#            #print tonal_center
-#            #print ' %-9s  Tonal Center: %-2s' % (str(datetime.utcnow())[14:23], tonal_center)
-#            #self.update_lights(tonal_center)
-#            return
-#
-#
-#
-#
-#            #print found_notes
-#            #return
-#
 #        if display_mode == 0:
 #            self.clear()
 #
@@ -357,7 +320,6 @@ class StudioInput(object):
             #print note['note_fullname']
             self.update_lights(note_name)
 
-#audio = StudioInput(28160, 2816)
 audio = StudioInput(44100, 4000)
 print '--------------------------------------------------------------'
 print 'Sample Rate: %s' % audio.SAMPLING_RATE
