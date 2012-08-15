@@ -19,6 +19,17 @@ G35_Lights::G35_Lights(int dataPin, int statusPin) {
    _dataPin   = dataPin;
    _statusPin = statusPin;
    _lockFlag  = false;
+   _enumerateFlag = false;
+}
+
+
+/* hasInitialized:
+ *
+ * Returns TRUE if the bulbs have been enumerated and are ready for commands
+ * otherwise returns FALSE
+ */
+bool G35_Lights::hasInitialized() {
+    return _enumerateFlag;
 }
 
 void G35_Lights::enumerateBulbs() {
@@ -32,15 +43,35 @@ void G35_Lights::enumerateBulbs() {
    delay(1000); 
 
    // Enumerate the bulbs
+   
+   /* This MAP redefines the addresses of the nodes such that the following
+    * numbers make sense
+    *
+    *   00,01,02,   03,04,05,   06,07,08,   09,10,11,
+    *   12,13,14,   15,16,17,   18,19,20,   21,22,23,    24,25,26,
+    *   27,28,29,   30,31,32,   33,34,35,   36,37,38,    39,40,41,
+    *
+    */
+    unsigned char enumeration_map[42] = { 0, 1, 2,    3, 4, 5,    6, 7, 8,    9,10,11,
+                                         21,22,23,   18,19,20,   15,16,17,   12,13,14,
+                                         27,28,29,   30,31,32,   33,34,35,   36,37,38,  39,40,41,  26,25,24};
+
    for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
        _targetBrightness[bulb] = MAX_BRIGHTNESS;
        _targetColor[bulb]      = BLACK;
-       _tx(bulb, _targetBrightness[bulb], _targetColor[bulb]);
+       if(bulb < 42) {
+           // remap Studio9 addresses for preset simplicity.
+           _tx(enumeration_map[bulb], _targetBrightness[bulb], _targetColor[bulb]);
+       } else {
+           // handle overflow on fosscon demo box (the box has 63 bulbs)
+           _tx(bulb, _targetBrightness[bulb], _targetColor[bulb]);
+       }
        delay(10);
    }
 
    // add additional delay
    delay(250);
+   _enumerateFlag = true;
 }
   
 /* Send start timing signal
@@ -73,15 +104,15 @@ void G35_Lights::_one() {
 void G35_Lights::_zero() {  
    digitalWrite(_dataPin, 0);   // gate LOW
    delayMicroseconds(2);        // hold 10uS
-   digitalWrite(_dataPin, 1);   // gate HIGH  
-   delayMicroseconds(17);       // hold 20uS  
+   digitalWrite(_dataPin, 1);   // gate HIGH
+   delayMicroseconds(17);       // hold 20uS
    digitalWrite(_dataPin, 0);   // gate LOW
 }  
    
 // Send the end timing signal
 void G35_Lights::_end() {  
    digitalWrite(_dataPin, 0);   // gate LOW
-   delayMicroseconds(40);       // hold: 40us  
+   delayMicroseconds(40);       // hold: 30us
 
    digitalWrite(_statusPin, 0); // turn off STATUS_PIN
 }  
@@ -266,6 +297,6 @@ void G35_Lights::_tx(unsigned char bulb, unsigned char brightness, unsigned int 
 
    // Send END signal
    _end();
-   _lockFlag = false;   
+   _lockFlag = false;
 }
 

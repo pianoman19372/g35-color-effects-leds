@@ -30,9 +30,11 @@ class G35_Effects {
     unsigned int  _fxCurrIndex;
     unsigned char _fxCurrColor;
     unsigned char _fxCurrOffset;
+    unsigned char _fxDirection;
 
     // FX transition methods
     void _nextTransition();
+    void _nextRandomColor();
 
     // FX Presets
     void _presetOFF();
@@ -51,23 +53,28 @@ class G35_Effects {
     void _presetDirectWhite(); 
     void _presetDirectIncandescent();
 
-    void _presetPolice();
-
-    void _presetThreeColorFlag(unsigned int, unsigned int, unsigned int);
-    void _presetUSA();
-    void _presetFrance();
-    void _presetIreland();
-
-    void _presetPodByPod();
-    void _presetAllFade();
-    void _presetBars();
-    void _presetMovie();
-    void _presetXFader();
-    void _presetPiano();
-
     void _presetFadeOneByOne();
-    void _presetFadeNorthToSouth();
-    void _presetFadeEastToWest();
+    void _presetFadePodByPod();
+    void _presetFadeNorthOrSouth();
+    void _presetFadeEastOrWest();
+    void _presetFadeDiagonal();
+
+//    void _presetFadeEastToWest();
+
+//    void _presetPolice();
+//
+//    void _presetThreeColorFlag(unsigned int, unsigned int, unsigned int);
+//    void _presetUSA();
+//    void _presetFrance();
+//    void _presetIreland();
+//
+//    void _presetPodByPod();
+//    void _presetAllFade();
+//    void _presetBars();
+//    void _presetMovie();
+//    void _presetXFader();
+//    void _presetPiano();
+//
 
 };
 

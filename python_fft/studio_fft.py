@@ -18,7 +18,7 @@ import math
 from socket import socket, AF_INET, SOCK_STREAM
 
 
-COMM_PORT = '/dev/tty.usbmodemfa141'
+COMM_PORT = '/dev/tty.usbmodemfa1431'
 
 class TonalCenter(object):
     # helper class used to calculate tonal center of song based on a series of notes

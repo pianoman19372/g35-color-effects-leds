@@ -36,6 +36,7 @@ class G35_Lights {
     G35_Lights(int dataPin, int statusPin);
     void enumerateBulbs();
     void tx(boolean fadeInto);
+    bool hasInitialized();
 
     void setColor(unsigned char bulb, unsigned char colorIndex);
     void setColor(unsigned char bulb, unsigned char colorIndex, unsigned char brightness);
@@ -47,6 +48,7 @@ class G35_Lights {
     int _dataPin;
     int _statusPin;
     bool _lockFlag;
+    bool _enumerateFlag;
 
     // bulb state management
     unsigned char _targetBrightness[NUM_LEDS];
