@@ -1,4 +1,4 @@
-/* GE G-35 ColorEffects Implementation File
+/* GE G-35 ColorEffects Effects Implementation File
  * (C) 2012 Edward F Long Jr.
  *
  * This software is licensed under the MIT license
@@ -21,8 +21,6 @@ G35_Effects::G35_Effects(G35_Lights *led) {
     _fxMode      = 1;
     _fxFadeInto  = false;
     _fxCurrIndex = 0;
-    _fxCurrIndex = 0;
-
 }
 
 /* G35_Effects :: thread
@@ -82,21 +80,16 @@ void G35_Effects::_nextTransition() {
     if(_fxMode == 32) { _presetFadeNorthOrSouth();   }
     if(_fxMode == 33) { _presetFadeEastOrWest();     }
     if(_fxMode == 34) { _presetFadeDiagonal();       }
-    
-//    //if(_fxMode ==  ) { _presetPolice(); }
-//
-//    if(_fxMode == 15) { _presetUSA(); }
-//    if(_fxMode == 16) { _presetIreland(); }
-//    if(_fxMode == 17) { _presetFrance(); }
-//    if(_fxMode == 19) { _presetPodByPod(); }
-//    if(_fxMode == 20) { _presetAllFade(); }
-//    if(_fxMode == 21) { _presetBars(); }
-//    if(_fxMode == 18) { _presetMovie(); }
-//    if(_fxMode == 22) { _presetXFader(); }
-//    if(_fxMode == 23) { _presetPiano(); }
-//
-//    if(_fxMode == 24) { _presetFadeNorthToSouth(); }
-//    if(_fxMode == 25) { _presetFadeEastToWest();   }
+    if(_fxMode == 35) { _presetFadeChecker(false);   }
+    if(_fxMode == 36) { _presetFadeChecker(true);    }
+    if(_fxMode == 37) { _presetMovie(true);          }
+    if(_fxMode == 38) { _presetMovie(false);         }
+    if(_fxMode == 39) { _presetPiano();              }
+    if(_fxMode == 40) { _presetPolice();             }
+    if(_fxMode == 41) { _presetIreland();            }
+    if(_fxMode == 42) { _presetUSA();                }
+    if(_fxMode == 43) { _presetIrelandFade();        }
+    if(_fxMode == 44) { _presetUSAFade();            }
 
     _led->tx(_fxFadeInto);
 }
@@ -126,6 +119,9 @@ void G35_Effects::_presetDirectIncandescent() { _presetDirectColor(INCANDESCENT)
 
 
 /* _nextRandomColor:
+ * TODO: make this smart enough to not choose a new color until all other colors are choosen
+ * TODO: make this smart enough to not choose colors of similar hue's for successive calls to random
+ *       (harder)
  *
  * Returns a new random color that is
  *   NOT black
@@ -144,12 +140,12 @@ void G35_Effects::_presetFadeOneByOne() {
     _fxFadeInto = true;
     if(_fxCurrIndex == 0) { _nextRandomColor(); }
     _led->setColor(_fxCurrIndex, _fxCurrColor);
-    _fxCurrIndex = (_fxCurrIndex + 1) % (42);
+    _fxCurrIndex = (_fxCurrIndex + 1) % (NUM_LEDS);
 }
 
 /* _presetFadePodByPod:
  *
- * Fades lights 3 at a time to the next random color for the 14 pods in Studio9
+ * Fades lights a pod at a time in a zig-zag configuration.
  */
 void G35_Effects::_presetFadePodByPod() {
     _fxFadeInto = true;
@@ -162,20 +158,34 @@ void G35_Effects::_presetFadePodByPod() {
            _led->setColor((_fxCurrIndex * 3) + offset, _fxCurrColor);
         }
     }
-    _fxCurrIndex = (_fxCurrIndex + 1) % (int(42 / 3));
+    _fxCurrIndex = (_fxCurrIndex + 1) % (int(NUM_LEDS / 3));
 }
 
+/* _presetFadeChecker
+ *
+ * Fades lights in a checkerboard/chessboard style layout
+ * If randomColors is false, use 2 colors, otherwise use random colors for
+ * each section on the 'grid'
+ */
+void G35_Effects::_presetFadeChecker(bool randomColors=false) {
+    _fxFadeInto = true;
+    if((_fxCurrIndex == 0) || (_fxCurrIndex == 7) || randomColors) { 
+        _nextRandomColor();
+    }
+    unsigned char bulb_presets[NUM_LEDS] = { 0, 0, 0,   8, 8, 8,   3, 3, 3,  11,11,11,
+                                             7, 7, 7,   2, 2, 2,  10,10,10,   5, 5, 5,  13,13,13,
+                                             1, 1, 1,   9, 9, 9,   4, 4, 4,  12,12,12,   6, 6, 6};
 
-// WINDOW: 2        1         2
-// SIDE     1      3 2       1
-//         3                  3
-
+    for (unsigned char bulb = 0; bulb < NUM_LEDS; bulb++) {
+       if (bulb_presets[bulb] == _fxCurrIndex) { _led->setColor(bulb, _fxCurrColor); }
+    }
+    _fxCurrIndex = (_fxCurrIndex + 1) % (100);
+}
 
 /* _presetFadeDiagonal
  *
  * Fades lights from north-east to south-west or vice versa
  * This is based on the physical locations of the pods in Studio9
- * this ones gonna be tricky!!
  */
 void G35_Effects::_presetFadeDiagonal() {
     _fxFadeInto = true;
@@ -183,20 +193,20 @@ void G35_Effects::_presetFadeDiagonal() {
         _nextRandomColor();
         _fxDirection = random(0, 2);
     }
-    unsigned char bulb_presets[42] = {0,0,0, 0,0,0, 0,0,0, 0,0,0,
-                                      0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,
-                                      0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0 };
+    unsigned char bulb_presets[NUM_LEDS] = { 4, 4, 5,   6, 6, 7,   8, 8, 9,  12,12,13,
+                                             2, 3, 2,   4, 5, 4,   6, 7, 6,   8, 9, 8,  10,11,12,
+                                             1, 0, 1,   3, 2, 3,   5, 4, 5,   7, 6, 7,   9, 8, 9};
 
-    for (unsigned char bulb = 0; bulb < 42; bulb++) {
+    for (unsigned char bulb = 0; bulb < NUM_LEDS; bulb++) {
         if(_fxDirection == 0) {
-           // north
+           // NE -> SW
            if (bulb_presets[bulb] == _fxCurrIndex) { _led->setColor(bulb, _fxCurrColor); }
         } else {
-           // south
-           if (bulb_presets[7 - bulb] == _fxCurrIndex) { _led->setColor(bulb, _fxCurrColor); }
+           // SW -> NE
+           if ((13 - bulb_presets[bulb]) == _fxCurrIndex) { _led->setColor(bulb, _fxCurrColor); }
         }
     }
-    _fxCurrIndex = (_fxCurrIndex + 1) % (7);
+    _fxCurrIndex = (_fxCurrIndex + 1) % (26);
 }
 
 
@@ -211,11 +221,11 @@ void G35_Effects::_presetFadeNorthOrSouth() {
         _nextRandomColor();
         _fxDirection = random(0, 2);
     }
-    unsigned char bulb_presets[42] = {1,0,0, 1,0,0, 1,0,0, 1,0,0,
-                                      3,2,4, 3,2,4, 3,2,4, 3,2,4, 3,3,3,
-                                      5,6,6, 5,6,6, 5,6,6, 5,6,6, 5,6,6 };
+    unsigned char bulb_presets[NUM_LEDS] = {1,0,0, 1,0,0, 1,0,0, 1,0,0,
+                                            3,2,4, 3,2,4, 3,2,4, 3,2,4, 3,3,3,
+                                            5,6,6, 5,6,6, 5,6,6, 5,6,6, 5,6,6 };
 
-    for (unsigned char bulb = 0; bulb < 42; bulb++) {
+    for (unsigned char bulb = 0; bulb < NUM_LEDS; bulb++) {
         if(_fxDirection == 0) {
            // north
            if (bulb_presets[bulb] == _fxCurrIndex) { _led->setColor(bulb, _fxCurrColor); }
@@ -238,11 +248,11 @@ void G35_Effects::_presetFadeEastOrWest() {
         _nextRandomColor();
         _fxDirection = random(0, 2);
     }
-    unsigned char bulb_presets[42] = { 1, 0, 2,   4, 3, 5,   7, 6, 8,   10, 9,11,
-                                       0, 1, 1,   3, 4, 4,   6, 7, 7,    9,10,10,   13,14,18,
-                                       1, 0, 2,   4, 3, 5,   7, 6, 8,   10, 9,11,   16,15,17,
+    unsigned char bulb_presets[NUM_LEDS] = { 1, 0, 2,   4, 3, 5,   7, 6, 8,   10, 9,11,
+                                             0, 1, 1,   3, 4, 4,   6, 7, 7,    9,10,10,   13,14,18,
+                                             1, 0, 2,   4, 3, 5,   7, 6, 8,   10, 9,11,   16,15,17,
                                      };
-    for (unsigned char bulb = 0; bulb < 42; bulb++) {
+    for (unsigned char bulb = 0; bulb < NUM_LEDS; bulb++) {
         if(_fxDirection == 0) {
            // east
            if (bulb_presets[bulb] == _fxCurrIndex) { _led->setColor(bulb, _fxCurrColor); }
@@ -254,257 +264,115 @@ void G35_Effects::_presetFadeEastOrWest() {
     _fxCurrIndex = (_fxCurrIndex + 1) % (36);
 }
 
+/* _presetPolice
+ *
+ * Fades lights in a beating strobe pattern with no fading
+ * all -> ((RED -> BLACK) x 6) -> ((BLUE -> BLACK) x 6)
+ */
+void G35_Effects::_presetPolice() {
+    _fxFadeInto = false;
+    unsigned char _fxPoliceBlinks = 6;
 
+    for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
 
-
-
-//                4,2,3, 4,2,3, 4,2,3, 4,2,3,
-//                5,6,6, 5,6,6, 5,6,6, 5,6,6, 5,6,6,
-//                3,3,3}
-
-//  bulb_ids = { 0, 1, 2,   3, 4, 5,   6, 7, 8,   9,10,11,
-//              23,22,21,  20,19,18,  17,16,15,  14,13,12,  41,40,39,
-//              24,25,26,  27,28,29,  30,31,32,  33,34,35,  36,37,38}; 
-
-   
-// void G35_Effects::_presetPolice() {
-//     _fxFadeInto = false;
-//     unsigned char _fxPoliceBlinks = 6;
-// 
-//     for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
-// 
-//        if (_fxCurrIndex % 2 == 0) {
-//            _led->setRGBColor(bulb, BLACK, MAX_BRIGHTNESS);
-//        } else if (_fxCurrIndex < (_fxPoliceBlinks * 2)) {
-//            _led->setRGBColor(bulb, RED, MAX_BRIGHTNESS);
-//        } else {
-//            _led->setRGBColor(bulb, BLUE, MAX_BRIGHTNESS);
-//        }
-//     }
-//     _fxCurrIndex = (_fxCurrIndex + 1) % (_fxPoliceBlinks * 4);
-// }
-// 
-// void G35_Effects::_presetThreeColorFlag(unsigned int color1, unsigned int color2, unsigned int color3) {
-//   _fxFadeInto = true; 
-//   for (unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
-//     if(bulb < 21     ) { _led->setRGBColor(bulb, color3, MAX_BRIGHTNESS); }
-//     else if(bulb < 42) { _led->setRGBColor(bulb, color2, MAX_BRIGHTNESS); }
-//     else               { _led->setRGBColor(bulb, color1, MAX_BRIGHTNESS); }
-//   }  
-// }
-// 
-// 
-// void G35_Effects::_presetUSA()      { _presetThreeColorFlag(RED, WHITE, BLUE); }
-// void G35_Effects::_presetFrance()   { _presetThreeColorFlag(BLUE, WHITE, RED); } 
-// void G35_Effects::_presetIreland()  { _presetThreeColorFlag(GREEN, WHITE, ORANGE); }
-// 
-// void G35_Effects::_presetPodByPod() { /* TODO */ }
-// void G35_Effects::_presetAllFade()  { /* TODO */ }
-// void G35_Effects::_presetBars()     { /* TODO */ }
-// void G35_Effects::_presetXFader()   { /* TODO */ }
-// void G35_Effects::_presetPiano()    { /* TODO */ }
-// void G35_Effects::_presetMovie()    { /* TODO */ }
-// 
-/*
-  
-static unsigned char effects_pod_by_pod_color  = 0;
-static unsigned char effects_pod_by_pod_cycles = 0;
-static unsigned char effects_pod_by_pod_width  = 0;
-static unsigned char effects_pod_by_pod_mode   = 0;
-static unsigned char effects_pod_by_pod_last_color = 0;
-
-//  Studio9 LEDS
-//
-//  bulb_ids = { 0, 1, 2,   3, 4, 5,   6, 7, 8,   9,10,11,
-//              23,22,21,  20,19,18,  17,16,15,  14,13,12,  41,40,39,
-//              24,25,26,  27,28,29,  30,31,32,  33,34,35,  36,37,38}; 
-
-   
-  
-static unsigned char effects_pod_by_pod_fade_ew[15][4] = {
- {  1, 21, 25, 99}, // row 1
- {  0, 23, 22, 24}, // row 2
- {  2, 26, 99, 99}, // row 3
- {  4, 18, 28, 99}, // row 4 
- 
- void effects_police() {
-   unsigned char blinks = 6;  
-   call_timer.interval(50);
-   fade_timer.interval(15); 
-   mode_fade = false;
-
-   for(unsigned char bulb_id=0; bulb_id < NUM_LEDS; bulb_id++) {
-     if      (_fxCurrIndex % 2 == 0      ) { led_set_color(bulb_id, LED_MAX_BRIGHTNESS, BLACK); }
-     else if (_fxCurrIndex < (blinks * 2)) { led_set_color(bulb_id, LED_MAX_BRIGHTNESS, RED  ); }
-     else                                  { led_set_color(bulb_id, LED_MAX_BRIGHTNESS, BLUE ); }
-   }
-   _fxCurrIndex = (_fxCurrIndex + 1) % (blinks * 4);
- }
- {  3, 20, 19, 27}, // row 5
- {  5, 29, 99, 99}, // row 6
- {  7, 15, 31, 99}, // row 7
- {  6, 17, 16, 30}, // row 8
- {  8, 32, 99, 99}, // row 9
- { 10, 12, 34, 99}, // row 10
- {  9, 14, 13, 33}, // row 11
- { 11, 35, 99, 99}, // row 12
- { 37, 41, 99, 99}, // row 13
- { 36, 40, 99, 99}, // row 14
- { 38, 39, 99, 99}};// row 15
- 
-    
-void effects_xfader() {
-  call_timer.interval(15);
-  fade_timer.interval(1); 
-  unsigned char max_brite = 30;
-  unsigned int my_colors[3] = {INCANDESCENT, INCANDESCENT, INCANDESCENT};
-  unsigned int modes[3];
-  
-  _fxCurrIndex = (_fxCurrIndex + 1) % (max_brite * 2);  
-  modes[0] = (_fxCurrIndex);
-  modes[1] = ((_fxCurrIndex + 20) % (max_brite * 2));  
-  modes[2] = ((_fxCurrIndex + 40) % (max_brite * 2));  
-  
-  for(unsigned char bulb_id=0; bulb_id < NUM_LEDS; bulb_id++) {
-    unsigned char my_mode = bulb_id % 3;
-    if (modes[my_mode] <= max_brite) {
-      led_set_color(bulb_id, modes[my_mode], my_colors[my_mode]);
-    } else {
-      led_set_color(bulb_id, (max_brite - (modes[my_mode] - max_brite)), my_colors[my_mode]);
+       if (_fxCurrIndex % 2 == 0) {
+           _led->setRGBColor(bulb, BLACK, MAX_BRIGHTNESS);
+       } else if (_fxCurrIndex < (_fxPoliceBlinks * 2)) {
+           _led->setRGBColor(bulb, RED, MAX_BRIGHTNESS);
+       } else {
+           _led->setRGBColor(bulb, BLUE, MAX_BRIGHTNESS);
+       }
     }
+    _fxCurrIndex = (_fxCurrIndex + 1) % (_fxPoliceBlinks * 4);
+}
+
+/* _presetThreeColorFlag
+ *
+ * Sets each row of lights to the specified colors
+ */
+void G35_Effects::_presetThreeColorFlag(unsigned int color1, unsigned int color2, unsigned int color3) {
+  _fxFadeInto = true; 
+  for (unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
+    if(bulb < 12     ) { _led->setRGBColor(bulb, color1, MAX_BRIGHTNESS); }
+    else if(bulb < 27) { _led->setRGBColor(bulb, color2, MAX_BRIGHTNESS); }
+    else               { _led->setRGBColor(bulb, color3, MAX_BRIGHTNESS); }
   }
 }
 
+/* _presetUSA
+ *
+ * Calls _presetThreeColor Flag with RED,WHITE, & BLUE
+ */
+void G35_Effects::_presetUSA()      { _presetThreeColorFlag(RED, WHITE, BLUE); }
+
+/* _presetUSAFade
+ *
+ * Fades each pod thru RED,WHITE, & BLUE
+ */
+void G35_Effects::_presetUSAFade()  {
+    _fxFadeInto = true;
+    unsigned int colors[3] = {RED, WHITE, BLUE};
+    for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
+       _led->setRGBColor(bulb, colors[(bulb + _fxCurrIndex) % 3], MAX_BRIGHTNESS);
+    }
+    _fxCurrIndex = (_fxCurrIndex + 1) % 3;
+}
+
+/* _presetIreland
+ *
+ * Calls _presetThreeColor Flag with GREEN, WHITE, & ORANGE
+ */
+void G35_Effects::_presetIreland()  { _presetThreeColorFlag(GREEN, WHITE, ORANGE); }
+
+/* _presetIrelandFade
+ *
+ * Fades each pod thru GREE, WHITE, & ORANGE
+ */
+void G35_Effects::_presetIrelandFade()  {
+    _fxFadeInto = true;
+    unsigned int colors[3] = {GREEN, WHITE, ORANGE};
+    for(unsigned char bulb=0; bulb < NUM_LEDS; bulb++) {
+       _led->setRGBColor(bulb, colors[(bulb + _fxCurrIndex) % 3], MAX_BRIGHTNESS);
+    }
+    _fxCurrIndex = (_fxCurrIndex + 1) % 3;
+}
 
 
- void effects_bars() {
-   call_timer.interval(5000);
-   fade_timer.interval(15); 
-   mode_fade = true;  
-  
-   unsigned char a = random(1,13);  unsigned char b = random(1,13);  unsigned char c = random(1,13);
-   unsigned char d = random(1,13);  unsigned char e = random(1,13);
-   while(b == a) { b = random(1, 13); }  while(c == b) { c = random(1, 13); }
-   while(d == c) { d = random(1, 13); }  while(e == d) { e = random(1, 13); }
-   unsigned int color[NUM_LEDS] = {a,a,a,  b,b,b,  c,c,c,  d,d,d,
-                                   d,d,d,  c,c,c,  b,b,b,  a,a,a,
-                                   a,a,a,  b,b,b,  c,c,c,  d,d,d,  e,e,e,
-                                   d,d,d};
- for(unsigned char bulb_id=0; bulb_id < NUM_LEDS; bulb_id++) {
-     led_set_color(bulb_id, LED_MAX_BRIGHTNESS, COLORS[color[bulb_id]]);
-   }        
- }
+/* _presetMovie
+ *
+ * Fades lights into movie preset
+ */
+void G35_Effects::_presetMovie(bool useCandlelight=true) {
+    _fxFadeInto = true;
 
+    unsigned char bulb_presets[9] = {0, 1, 2, 27, 28, 29, 26, 24};
+    unsigned char bulb_brights[7] = {MAX_BRIGHTNESS, MAX_BRIGHTNESS - 10, MAX_BRIGHTNESS - 20, MAX_BRIGHTNESS - 30,
+                                     MAX_BRIGHTNESS - 40, MAX_BRIGHTNESS - 50, MAX_BRIGHTNESS - 70};
 
+    for (unsigned char bulb = 0; bulb < NUM_LEDS; bulb++) {
+        _led->setColor(bulb, BLACK);
+    };
 
- void effects_movie_mode() {
-   unsigned int color[NUM_LEDS] = {12,12,12,  0, 0, 0,  0, 0, 0,  0, 0, 0,
-                                    0, 0, 0,  0, 0, 0,  0, 0, 0,  0, 0, 0,
-                                   12,12,12,  0, 0, 0,  0, 0, 0,  0, 0, 0,  12,12,12,
-                                   12,12,12};
-   
-   call_timer.interval(200);
-   for(unsigned char bulb_id=0; bulb_id < NUM_LEDS; bulb_id++) {
-     unsigned char bias = random(0, 80);
-     unsigned char brightness = LED_MAX_BRIGHTNESS - bias;
-     if (bias > 75) { brightness = 50; }
-     led_set_color(bulb_id, brightness, COLORS[color[bulb_id]]);
-   }        
- }
- 
+    for (unsigned char bulb = 0; bulb < 9; bulb++) {
+        if(useCandlelight) {
+            _led->setRGBColor(bulb_presets[bulb], INCANDESCENT, bulb_brights[random(0,7)]);
+        } else {
+            _led->setRGBColor(bulb_presets[bulb], INCANDESCENT, MAX_BRIGHTNESS - 50);
+        }
+    };
+}
 
-
-void effects_piano() {
-   unsigned int color[NUM_LEDS] = {0,0,0,  0,0,0,  0,0,0,  0,0,0,
-                                   0,0,0,  0,0,0,  0,5,0,  0,0,0,
-                                   0,0,5,  5,5,5,  5,0,0,  0,0,0,  0,0,0,
-                                   0,5,0};
-   for(unsigned char bulb_id=0; bulb_id < NUM_LEDS; bulb_id++) {
-     led_set_color(bulb_id, LED_MAX_BRIGHTNESS, COLORS[color[bulb_id]]);
-   }        
- }
-
-
- // color changer pod by pod
- void effects_pod_by_pod_fade() {
-   call_timer.interval(125);
-   fade_timer.interval(30);    
-   unsigned char address           =   99;
-   static unsigned int effect_time =  500;   // time per effect
-   static unsigned int hold_time   =  500;   // time to hold at current color when transition complete
-
-   
-   if(_fxCurrIndex == 0) { 
-     // prevent reuse of last colors
-     effects_pod_by_pod_last_color = effects_pod_by_pod_color;
-     while(effects_pod_by_pod_color == effects_pod_by_pod_last_color) {
-       effects_pod_by_pod_color  = random(1,13);
-     }
-     effects_pod_by_pod_mode   = random(0,6);
-
-     // sequential     
-     if((effects_pod_by_pod_mode == 0) || (effects_pod_by_pod_mode == 1)) {
-       effects_pod_by_pod_cycles = NUM_LEDS;
-       effects_pod_by_pod_width  = 0;
-     }
-     
-     // north or south effects
-     if ((effects_pod_by_pod_mode == 2) || (effects_pod_by_pod_mode == 3)) {
-       effects_pod_by_pod_cycles =  7;  // number of rows in multidim array
-       effects_pod_by_pod_width  = 10;  // number of cells in row
-     }
-     // east or west effects
-     if ((effects_pod_by_pod_mode == 4) || (effects_pod_by_pod_mode == 5)) {
-       effects_pod_by_pod_cycles = 15; // number of rows in multidim array
-       effects_pod_by_pod_width  = 4;  // number of cells in row
-     }
-     // set chase time
-     call_timer.interval(int(effect_time / effects_pod_by_pod_cycles));
-     // call_timer.interval(125);
-   }
-   
-   // FADE POD BY POD EFFECT
-   if((effects_pod_by_pod_mode == 0) || (effects_pod_by_pod_mode == 1)) {
-     if(effects_pod_by_pod_mode == 0) { address =                                 _fxCurrIndex; }
-     else                             { address = effects_pod_by_pod_cycles - 1 - _fxCurrIndex; } 
-     led_set_color(address, LED_MAX_BRIGHTNESS, COLORS[effects_pod_by_pod_color]); 
-   }
-   
-   // FADE N/S/E/W EFFECT
-   if((effects_pod_by_pod_mode == 2) || (effects_pod_by_pod_mode == 3) || (effects_pod_by_pod_mode == 4) || (effects_pod_by_pod_mode == 5)) {
-     for(int ptr=0;ptr<effects_pod_by_pod_width;ptr++) {
-       if     (effects_pod_by_pod_mode == 2) { address = effects_pod_by_pod_fade_ns[                                _fxCurrIndex][ptr]; }
-       else if(effects_pod_by_pod_mode == 3) { address = effects_pod_by_pod_fade_ns[effects_pod_by_pod_cycles - 1 - _fxCurrIndex][ptr]; }
-       else if(effects_pod_by_pod_mode == 4) { address = effects_pod_by_pod_fade_ew[                                _fxCurrIndex][ptr]; }
-       else if(effects_pod_by_pod_mode == 5) { address = effects_pod_by_pod_fade_ew[effects_pod_by_pod_cycles - 1 - _fxCurrIndex][ptr]; }
-       if(address < NUM_LEDS)                { led_set_color(address, LED_MAX_BRIGHTNESS, COLORS[effects_pod_by_pod_color]);  }
-     }
-   }
-   
-   // increment ring counter
-   _fxCurrIndex = (_fxCurrIndex + 1) % (effects_pod_by_pod_cycles);
-   
-   if (_fxCurrIndex == 0) {
-      // we reached the end of the transition, change call time
-      call_timer.interval(hold_time);
-   }
- }
-
-
-
-
-
- // color changer all
- void effects_all_by_fade() {
-   call_timer.interval(4000);
-   fade_timer.interval(10);
-   if(mode_rand) { _fxCurrIndex = random(1,13); }
-   else          { _fxCurrIndex++; }
-   for(unsigned char address=0; address < NUM_LEDS; address++) { 
-     led_set_color(address, LED_MAX_BRIGHTNESS, COLORS[_fxCurrIndex]); 
-   }
-   if ((!mode_rand) && (_fxCurrIndex >= 12)) { _fxCurrIndex = 0; }
- }
-*/
-
-
+/* _presetPiano
+ *
+ * Fades lights into piano preset
+ */
+void G35_Effects::_presetPiano() {
+    _fxFadeInto = true;
+    unsigned char bulb_presets[4] = {30, 31, 32, 25};
+    for (unsigned char bulb = 0; bulb < NUM_LEDS; bulb++) {
+        _led->setColor(bulb, BLACK);
+    };
+    for (unsigned char bulb = 0; bulb < 4; bulb++) {
+        _led->setRGBColor(bulb_presets[bulb], INCANDESCENT, MAX_BRIGHTNESS);
+    };
+}

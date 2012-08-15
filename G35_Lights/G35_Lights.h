@@ -10,7 +10,7 @@
 
 #include "Arduino.h"
 
-#define NUM_LEDS        (63)
+#define NUM_LEDS        (42)
 #define MAX_BRIGHTNESS  (0xCC)
 
 // Color Definitions

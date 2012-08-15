@@ -58,23 +58,17 @@ class G35_Effects {
     void _presetFadeNorthOrSouth();
     void _presetFadeEastOrWest();
     void _presetFadeDiagonal();
+    void _presetFadeChecker(bool);
+    void _presetMovie(bool);
+    void _presetPiano();
 
-//    void _presetFadeEastToWest();
+    void _presetPolice();
 
-//    void _presetPolice();
-//
-//    void _presetThreeColorFlag(unsigned int, unsigned int, unsigned int);
-//    void _presetUSA();
-//    void _presetFrance();
-//    void _presetIreland();
-//
-//    void _presetPodByPod();
-//    void _presetAllFade();
-//    void _presetBars();
-//    void _presetMovie();
-//    void _presetXFader();
-//    void _presetPiano();
-//
+    void _presetThreeColorFlag(unsigned int, unsigned int, unsigned int);
+    void _presetUSA();
+    void _presetUSAFade();
+    void _presetIreland();
+    void _presetIrelandFade();
 
 };
 
