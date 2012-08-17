@@ -42,7 +42,7 @@ void G35_Effects::thread() {
 
    // Fire off next LED transition
    if (fade_timer.check()) {
-      _led->tx(_fxFadeInto);
+       _led->tx(_fxFadeInto);
    }
 }
 

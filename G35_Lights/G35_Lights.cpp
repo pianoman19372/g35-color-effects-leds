@@ -40,10 +40,10 @@ void G35_Lights::enumerateBulbs() {
    digitalWrite(_statusPin, 0);
 
    // settle the bus
-   delay(1000); 
+   delay(200);
 
    // Enumerate the bulbs
-   
+
    /* This MAP redefines the addresses of the nodes such that the following
     * numbers make sense
     *
@@ -66,56 +66,48 @@ void G35_Lights::enumerateBulbs() {
            // handle overflow on fosscon demo box (the box has 63 bulbs)
            _tx(bulb, _targetBrightness[bulb], _targetColor[bulb]);
        }
-       delay(10);
    }
 
    // add additional delay
-   delay(250);
    _enumerateFlag = true;
 }
-  
-/* Send start timing signal
- *
- * Note: The timings here are a little unusual, this is to compensate for overhead on
- *       The arduino uno.  The timings specified in the comments are the actual
- *       measured timings of the stock led lights.  the additional (unnessary) gates
- *       to LOW are used to eat up a few us for timing purposes.
- *
- *       credits: Scott Harris, Robert Quattlebaum
- */
-void G35_Lights::_start() {
-   digitalWrite(_statusPin, 1); // turn on STATUS_PIN
 
-   digitalWrite(_dataPin, 1);   // gate HIGH
-   delayMicroseconds(7);        // hold 10us
-   digitalWrite(_dataPin, 0);   // gate LOW
-}  
+// Send start timing signal
+void G35_Lights::_start() {
+   // turn off interrupts
+   noInterrupts();
+
+   digitalWrite(_dataPin, HIGH);   // gate HI
+   delayMicroseconds(DELAY_SHORT); // hold 10uS
+}
 
 // Send a '1' bit
-void G35_Lights::_one() {  
-   digitalWrite(_dataPin, 0);   // gate LOW
-   delayMicroseconds(11);       // hold 20uS 
-   digitalWrite(_dataPin, 1);   // gate HIGH
-   delayMicroseconds(7);        // hold 10uS
-   digitalWrite(_dataPin, 0);   // gate LOW
-}  
-   
-// Send a '0' bit
-void G35_Lights::_zero() {  
-   digitalWrite(_dataPin, 0);   // gate LOW
-   delayMicroseconds(2);        // hold 10uS
-   digitalWrite(_dataPin, 1);   // gate HIGH
-   delayMicroseconds(17);       // hold 20uS
-   digitalWrite(_dataPin, 0);   // gate LOW
-}  
-   
-// Send the end timing signal
-void G35_Lights::_end() {  
-   digitalWrite(_dataPin, 0);   // gate LOW
-   delayMicroseconds(40);       // hold: 30us
+void G35_Lights::_one() {
 
-   digitalWrite(_statusPin, 0); // turn off STATUS_PIN
-}  
+    digitalWrite(_dataPin, LOW);    // gate LO
+    delayMicroseconds(DELAY_LONG);  // hold 20uS
+    digitalWrite(_dataPin, HIGH);   // gate HI
+    delayMicroseconds(DELAY_SHORT); // hold 10uS
+}
+
+// Send a '0' bit
+void G35_Lights::_zero() {
+
+   digitalWrite(_dataPin, LOW);    // gate LO
+   delayMicroseconds(DELAY_SHORT); // hold 10uS
+   digitalWrite(_dataPin, HIGH);   // gate HI
+   delayMicroseconds(DELAY_LONG);  // hold 20uS
+}
+
+// Send the end timing signal
+void G35_Lights::_end() {
+
+   digitalWrite(_dataPin, LOW);     // gate LO
+   delayMicroseconds(DELAY_END);    // hold 30uS
+
+   // turn interrupts back on
+   interrupts();
+}
 
 /* Use this method to set the desired colors of the LEDs
 *  Then call G35_Lights::tx() to transmit the commands to the bulbs */ 

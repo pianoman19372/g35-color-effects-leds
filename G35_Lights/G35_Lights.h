@@ -13,6 +13,11 @@
 #define NUM_LEDS        (42)
 #define MAX_BRIGHTNESS  (0xCC)
 
+// logic level pin timings
+#define DELAY_LONG  17     // 20uS - 3uS latency for digitalWrite
+#define DELAY_SHORT  7     // 10uS - 3uS latency for digitalWrite
+#define DELAY_END   27     // 30uS - 3uS latency for digitalWrite
+
 // Color Definitions
 #define COLOR(red, green, blue)    ((red) + ((green) << 4) + ((blue) << 8))  
 
@@ -41,9 +46,9 @@ class G35_Lights {
     void setColor(unsigned char bulb, unsigned char colorIndex);
     void setColor(unsigned char bulb, unsigned char colorIndex, unsigned char brightness);
     void setRGBColor(unsigned char bulb, unsigned int color, unsigned char brightness);
-    
-    
-  private:  
+
+
+  private:
     // hardware assignments
     int _dataPin;
     int _statusPin;

@@ -33,7 +33,7 @@ void setup() {
   
   // Configure LED Hardware
   led.enumerateBulbs();
-  fx.setEffects(37, 150,  50); 
+  fx.setEffects(37, 150,  50);
 }
 
 void loop() {  
